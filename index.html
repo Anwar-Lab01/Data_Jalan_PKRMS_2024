@@ -2,126 +2,134 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dashboard Kondisi Jalan Kabupaten - 350 Ruas</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Dashboard Kondisi Jalan Kabupaten</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         body { font-family: 'Inter', sans-serif; }
-        .table-container { height: calc(100vh - 380px); overflow-y: auto; }
+        
+        /* Desktop Table Scroll */
+        .table-container { height: calc(100vh - 280px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        
+        /* Sticky Headers */
         thead th { position: sticky; top: 0; z-index: 20; }
+        
+        /* Mobile Specific Adjustments */
+        @media (max-width: 768px) {
+            .table-container { height: auto; overflow-y: visible; background-color: transparent; }
+            body { overflow-y: auto; height: auto; min-height: 100vh; }
+            .desktop-table { display: none; }
+            .mobile-cards { display: block; }
+            /* Hide the desktop stats header on mobile to save space if needed, 
+               but we keep the horizontal scroll stats */
+        }
+        @media (min-width: 769px) {
+            .desktop-table { display: table; }
+            .mobile-cards { display: none; }
+            body { overflow: hidden; height: 100vh; }
+        }
+
         /* Custom scrollbar */
-        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
         ::-webkit-scrollbar-track { background: #f1f5f9; }
         ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
         ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+        
+        /* Hide scrollbar for horizontal scrolling elements */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-900 h-screen flex flex-col overflow-hidden">
+<body class="bg-slate-50 text-slate-900 flex flex-col">
 
-    <div class="max-w-7xl w-full mx-auto px-4 py-6 flex flex-col h-full">
+    <div class="max-w-7xl w-full mx-auto px-4 py-4 md:py-6 flex flex-col h-full">
         <!-- Header Section -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4 flex-shrink-0">
+        <div class="flex flex-col md:flex-row md:items-center justify-between mb-4 md:mb-6 gap-4 flex-shrink-0">
             <div>
-                <h1 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-                    <i data-lucide="map-pinned" class="text-blue-600"></i> Rekapitulasi 350 Ruas Jalan
+                <h1 class="text-xl md:text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="map-pinned" class="text-blue-600 w-6 h-6"></i> 
+                    <span>Rekap Jalan</span>
                 </h1>
-                <p class="text-slate-500 text-sm">Total Panjang Terdata: 732.46 KM • Integrasi Data Wilayah</p>
+                <p class="text-slate-500 text-xs md:text-sm">Total: 732.46 KM • Integrasi Wilayah</p>
             </div>
             
             <!-- Filters & Search -->
-            <div class="flex flex-wrap items-center gap-3">
+            <div class="flex flex-col md:flex-row gap-2 md:gap-3 w-full md:w-auto">
                 <!-- Search -->
-                <div class="relative group">
+                <div class="relative group w-full md:w-auto">
                     <i data-lucide="search" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 group-focus-within:text-blue-500 transition-colors"></i>
-                    <input type="text" id="searchInput" placeholder="Cari nama ruas..." 
-                        class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 shadow-sm text-sm transition-all">
+                    <input type="text" id="searchInput" placeholder="Cari ruas/kecamatan..." 
+                        class="pl-10 pr-4 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none w-full md:w-64 shadow-sm text-sm transition-all bg-white">
                 </div>
 
-                <!-- Kecamatan Filter -->
-                <div class="relative">
-                    <i data-lucide="building-2" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <select id="kecamatanFilter" class="pl-10 pr-8 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white shadow-sm text-sm w-full md:w-48 cursor-pointer">
-                        <option value="">Semua Kecamatan</option>
-                        <!-- Options populated via JS -->
-                    </select>
-                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
-                </div>
+                <!-- Filters Row for Mobile -->
+                <div class="flex gap-2 w-full md:w-auto">
+                    <!-- Kecamatan Filter -->
+                    <div class="relative w-1/2 md:w-auto">
+                        <select id="kecamatanFilter" class="pl-3 pr-8 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white shadow-sm text-xs md:text-sm w-full md:w-40 cursor-pointer text-slate-600">
+                            <option value="">Semua Kec.</option>
+                            <!-- Options populated via JS -->
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                    </div>
 
-                <!-- Sort -->
-                <div class="relative">
-                    <i data-lucide="arrow-up-down" class="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"></i>
-                    <select id="sortFilter" class="pl-10 pr-8 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white shadow-sm text-sm w-full md:w-48 cursor-pointer">
-                        <option value="name_asc">Nama (A-Z)</option>
-                        <option value="name_desc">Nama (Z-A)</option>
-                        <option value="length_desc">Panjang (Terpanjang)</option>
-                        <option value="length_asc">Panjang (Terpendek)</option>
-                        <option value="condition_good">Kondisi Baik (Tertinggi)</option>
-                        <option value="condition_bad">Rusak Berat (Tertinggi)</option>
-                    </select>
-                    <i data-lucide="chevron-down" class="absolute right-3 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                    <!-- Sort -->
+                    <div class="relative w-1/2 md:w-auto">
+                        <select id="sortFilter" class="pl-3 pr-8 py-2 border border-slate-200 rounded-xl focus:ring-2 focus:ring-blue-500 outline-none appearance-none bg-white shadow-sm text-xs md:text-sm w-full md:w-40 cursor-pointer text-slate-600">
+                            <option value="name_asc">Nama (A-Z)</option>
+                            <option value="length_desc">Panjang (Max)</option>
+                            <option value="condition_good">Baik (Max)</option>
+                            <option value="condition_bad">Rusak (Max)</option>
+                        </select>
+                        <i data-lucide="chevron-down" class="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Stats Summary -->
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6 flex-shrink-0">
-            <div class="bg-white border-l-4 border-emerald-500 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Kondisi Baik</div>
-                        <div class="text-lg md:text-2xl font-bold text-slate-800">144.97 <span class="text-xs font-normal text-slate-400">KM</span></div>
-                    </div>
-                    <div class="bg-emerald-100 text-emerald-700 px-2 py-1 rounded text-xs font-bold">19.79%</div>
-                </div>
+        <!-- Stats Summary (Scrollable horizontal on mobile) -->
+        <div class="flex overflow-x-auto gap-3 mb-4 md:mb-6 pb-2 md:pb-0 flex-shrink-0 no-scrollbar snap-x">
+            <div class="bg-white border-l-4 border-emerald-500 p-3 rounded-lg shadow-sm min-w-[130px] flex-1 snap-center">
+                <div class="text-slate-500 text-[10px] font-bold uppercase mb-1">Baik</div>
+                <div class="text-lg font-bold text-slate-800">144.97 <span class="text-[10px] text-slate-400">KM</span></div>
+                <div class="text-emerald-600 text-[10px] font-bold bg-emerald-50 inline-block px-1 rounded">19.79%</div>
             </div>
-            <div class="bg-white border-l-4 border-blue-500 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Kondisi Sedang</div>
-                        <div class="text-lg md:text-2xl font-bold text-slate-800">275.21 <span class="text-xs font-normal text-slate-400">KM</span></div>
-                    </div>
-                    <div class="bg-blue-100 text-blue-700 px-2 py-1 rounded text-xs font-bold">37.57%</div>
-                </div>
+            <div class="bg-white border-l-4 border-blue-500 p-3 rounded-lg shadow-sm min-w-[130px] flex-1 snap-center">
+                <div class="text-slate-500 text-[10px] font-bold uppercase mb-1">Sedang</div>
+                <div class="text-lg font-bold text-slate-800">275.21 <span class="text-[10px] text-slate-400">KM</span></div>
+                <div class="text-blue-600 text-[10px] font-bold bg-blue-50 inline-block px-1 rounded">37.57%</div>
             </div>
-            <div class="bg-white border-l-4 border-amber-500 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Rusak Ringan</div>
-                        <div class="text-lg md:text-2xl font-bold text-slate-800">93.65 <span class="text-xs font-normal text-slate-400">KM</span></div>
-                    </div>
-                    <div class="bg-amber-100 text-amber-700 px-2 py-1 rounded text-xs font-bold">12.79%</div>
-                </div>
+            <div class="bg-white border-l-4 border-amber-500 p-3 rounded-lg shadow-sm min-w-[130px] flex-1 snap-center">
+                <div class="text-slate-500 text-[10px] font-bold uppercase mb-1">R. Ringan</div>
+                <div class="text-lg font-bold text-slate-800">93.65 <span class="text-[10px] text-slate-400">KM</span></div>
+                <div class="text-amber-600 text-[10px] font-bold bg-amber-50 inline-block px-1 rounded">12.79%</div>
             </div>
-            <div class="bg-white border-l-4 border-rose-500 p-4 rounded-xl shadow-sm hover:shadow-md transition-shadow">
-                <div class="flex justify-between items-start">
-                    <div>
-                        <div class="text-slate-500 text-[10px] font-bold uppercase tracking-wider mb-1">Rusak Berat</div>
-                        <div class="text-lg md:text-2xl font-bold text-slate-800">218.63 <span class="text-xs font-normal text-slate-400">KM</span></div>
-                    </div>
-                    <div class="bg-rose-100 text-rose-700 px-2 py-1 rounded text-xs font-bold">29.85%</div>
-                </div>
+            <div class="bg-white border-l-4 border-rose-500 p-3 rounded-lg shadow-sm min-w-[130px] flex-1 snap-center">
+                <div class="text-slate-500 text-[10px] font-bold uppercase mb-1">R. Berat</div>
+                <div class="text-lg font-bold text-slate-800">218.63 <span class="text-[10px] text-slate-400">KM</span></div>
+                <div class="text-rose-600 text-[10px] font-bold bg-rose-50 inline-block px-1 rounded">29.85%</div>
             </div>
         </div>
 
-        <!-- Table Card -->
-        <div class="bg-white border border-slate-200 rounded-2xl shadow-md overflow-hidden flex-grow flex flex-col">
-            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 flex justify-between items-center flex-shrink-0">
-                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide" id="tableHeaderStatus">
-                    Menampilkan Data
-                </div>
-                <div id="rowCount" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold whitespace-nowrap">
-                    Memuat...
-                </div>
+        <!-- Content Area -->
+        <div class="flex-grow flex flex-col min-h-0 bg-transparent md:bg-white md:border md:border-slate-200 md:rounded-2xl md:shadow-md md:overflow-hidden">
+            
+            <!-- Table Header Status (Desktop Only) -->
+            <div class="hidden md:flex px-4 py-3 bg-slate-50 border-b border-slate-200 justify-between items-center flex-shrink-0">
+                <div class="text-xs font-semibold text-slate-500 uppercase tracking-wide">Data Kondisi Jalan</div>
+                <div id="rowCount" class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-xs font-bold">...</div>
             </div>
-            <div class="table-container flex-grow">
-                <table class="w-full text-sm text-left border-collapse">
+
+            <!-- Scrollable Content -->
+            <div class="table-container">
+                
+                <!-- 1. DESKTOP VIEW (Table) -->
+                <table class="w-full text-sm text-left border-collapse desktop-table">
                     <thead>
                         <tr class="bg-slate-800 text-white shadow-lg">
-                            <th rowspan="2" class="px-4 py-3 font-semibold text-xs uppercase border-r border-slate-700 w-1/4">
-                                Nama Ruas & Lokasi
-                            </th>
+                            <th rowspan="2" class="px-4 py-3 font-semibold text-xs uppercase border-r border-slate-700 w-1/4">Nama Ruas & Lokasi</th>
                             <th rowspan="2" class="px-2 py-3 font-semibold text-xs uppercase text-center border-r border-slate-700 w-16">Pjg<br>(KM)</th>
                             <th rowspan="2" class="px-2 py-3 font-semibold text-xs uppercase text-center border-r border-slate-700 w-16">Lbr<br>(M)</th>
                             <th colspan="2" class="px-2 py-1 font-semibold text-[10px] uppercase text-center border-r border-slate-700 bg-emerald-700/80">Baik</th>
@@ -140,18 +148,23 @@
                             <th class="px-1 py-1 text-center bg-rose-800/50">%</th>
                         </tr>
                     </thead>
-                    <tbody id="tableBody" class="divide-y divide-slate-100 bg-white">
-                        <!-- Data populated via JS -->
-                    </tbody>
+                    <tbody id="tableBodyDesktop" class="divide-y divide-slate-100 bg-white"></tbody>
                 </table>
+
+                <!-- 2. MOBILE VIEW (Cards) - Populated via JS -->
+                <div id="mobileCardContainer" class="mobile-cards space-y-3 pb-20 md:pb-0">
+                    <!-- Cards injected here -->
+                </div>
+
             </div>
         </div>
     </div>
 
     <script>
-        // 1. Data Referensi Lokasi (Dari Input Anda - Data Lama)
+        // 1. Data Referensi Lokasi
+        // SILAHKAN PASTE DATA LENGKAP ANDA DI DALAM KURUNG SIKU DI BAWAH INI
         const locationReference = [
-            { no: 1, nama: "Jl. Muning Tengah - Muning Dalam", kecamatan: "Daha Selatan", desa: "Ds. Muning Tengah - Muning Dalam" },
+   { no: 1, nama: "Jl. Muning Tengah - Muning Dalam", kecamatan: "Daha Selatan", desa: "Ds. Muning Tengah - Muning Dalam" },
             { no: 2, nama: "Mawangi - Bukuanin - Telaga Langsat", kecamatan: "Padang Batung", desa: "Ds. Mawangi - Ds. Mandala" },
             { no: 3, nama: "Malilingin - Lokbahan - Paniungan", kecamatan: "Padang Batung", desa: "Ds. Malilingin" },
             { no: 4, nama: "Jl. Bago Tanggul - Katilang - Teratai", kecamatan: "Kalumpang", desa: "Ds. Bago Tanggul - Ds. Kalumpang" },
@@ -959,27 +972,33 @@
         }
 
         function renderTable(data) {
-            const tbody = document.getElementById('tableBody');
+            const tbody = document.getElementById('tableBodyDesktop');
+            const mobileContainer = document.getElementById('mobileCardContainer');
             const countDiv = document.getElementById('rowCount');
             const statusDiv = document.getElementById('tableHeaderStatus');
             
+            // Reset contents
             tbody.innerHTML = '';
+            mobileContainer.innerHTML = '';
             
             if (data.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="11" class="text-center py-8 text-slate-400">Tidak ada data ditemukan</td></tr>`;
+                const emptyMsg = `<tr><td colspan="11" class="text-center py-8 text-slate-400">Tidak ada data ditemukan</td></tr>`;
+                tbody.innerHTML = emptyMsg;
+                mobileContainer.innerHTML = `<div class="text-center py-8 text-slate-400 text-sm">Tidak ada data ditemukan</div>`;
                 countDiv.innerText = "0 Ruas";
                 return;
             }
 
             data.forEach((item, index) => {
-                const pb = (item.b / item.p) * 100 || 0;
-                const ps = (item.s / item.p) * 100 || 0;
-                const prr = (item.rr / item.p) * 100 || 0;
-                const prb = (item.rb / item.p) * 100 || 0;
+                // Calculate percentages
+                const pb = item.p > 0 ? (item.b / item.p) * 100 : 0;
+                const ps = item.p > 0 ? (item.s / item.p) * 100 : 0;
+                const prr = item.p > 0 ? (item.rr / item.p) * 100 : 0;
+                const prb = item.p > 0 ? (item.rb / item.p) * 100 : 0;
 
+                // --- 1. Render Desktop Row ---
                 const row = document.createElement('tr');
                 row.className = index % 2 === 0 ? "bg-white hover:bg-slate-50" : "bg-slate-50/50 hover:bg-slate-50";
-                
                 row.innerHTML = `
                     <td class="px-4 py-3 border-r border-slate-100">
                         <div class="font-bold text-slate-700 text-sm">${item.n}</div>
@@ -1008,10 +1027,58 @@
                     <td class="px-2 py-3 text-center text-[9px] text-slate-400 bg-rose-50/30">${prb > 0 ? prb.toFixed(0)+'%' : ''}</td>
                 `;
                 tbody.appendChild(row);
+
+                // --- 2. Render Mobile Card ---
+                const card = document.createElement('div');
+                card.className = "bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex flex-col gap-3";
+                card.innerHTML = `
+                    <div class="flex justify-between items-start">
+                        <div class="flex-1 mr-2">
+                            <h3 class="font-bold text-slate-800 text-sm leading-tight mb-1">${item.n}</h3>
+                            <div class="flex flex-wrap items-center gap-2 text-[10px] text-slate-500">
+                                <span class="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100"><i data-lucide="building-2" class="w-3 h-3 text-blue-400"></i> ${item.kecamatan}</span>
+                                <span class="flex items-center gap-1 bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100"><i data-lucide="map-pin" class="w-3 h-3 text-slate-400"></i> ${item.desa}</span>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-bold text-slate-700">${item.p.toFixed(2)} <span class="text-[10px] text-slate-400 font-normal">KM</span></div>
+                            <div class="text-[10px] text-slate-400">Lbr: ${item.l}m</div>
+                        </div>
+                    </div>
+
+                    <!-- Visual Progress Bar -->
+                    <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden flex">
+                        ${pb > 0 ? `<div style="width: ${pb}%" class="bg-emerald-500"></div>` : ''}
+                        ${ps > 0 ? `<div style="width: ${ps}%" class="bg-blue-500"></div>` : ''}
+                        ${prr > 0 ? `<div style="width: ${prr}%" class="bg-amber-500"></div>` : ''}
+                        ${prb > 0 ? `<div style="width: ${prb}%" class="bg-rose-500"></div>` : ''}
+                    </div>
+
+                    <!-- Condition Grid -->
+                    <div class="grid grid-cols-4 gap-2 text-center">
+                        <div class="bg-emerald-50/50 rounded py-1 border border-emerald-100/50">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider">Baik</div>
+                            <div class="text-xs font-bold text-emerald-600">${item.b > 0 ? item.b.toFixed(2) : '-'}</div>
+                        </div>
+                        <div class="bg-blue-50/50 rounded py-1 border border-blue-100/50">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider">Sdg</div>
+                            <div class="text-xs font-bold text-blue-600">${item.s > 0 ? item.s.toFixed(2) : '-'}</div>
+                        </div>
+                        <div class="bg-amber-50/50 rounded py-1 border border-amber-100/50">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider">R.Rg</div>
+                            <div class="text-xs font-bold text-amber-600">${item.rr > 0 ? item.rr.toFixed(2) : '-'}</div>
+                        </div>
+                        <div class="bg-rose-50/50 rounded py-1 border border-rose-100/50">
+                            <div class="text-[10px] text-slate-400 uppercase tracking-wider">R.Br</div>
+                            <div class="text-xs font-bold text-rose-600">${item.rb > 0 ? item.rb.toFixed(2) : '-'}</div>
+                        </div>
+                    </div>
+                `;
+                mobileContainer.appendChild(card);
             });
             
             countDiv.innerText = `${data.length} Ruas`;
-            statusDiv.innerText = `Menampilkan Data (${data.length})`;
+            if(statusDiv) statusDiv.innerText = `Menampilkan Data (${data.length})`;
             lucide.createIcons(); // Refresh icons for new rows
         }
 
@@ -1027,5 +1094,4 @@
         };
     </script>
 </body>
-
 </html>
